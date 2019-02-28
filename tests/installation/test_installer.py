@@ -20,6 +20,9 @@ from poetry.utils.env import NullEnv
 
 from tests.helpers import get_dependency
 from tests.helpers import get_package
+from tests.repositories.test_legacy_repository import (
+    MockRepository as MockLegacyRepository,
+)
 from tests.repositories.test_pypi_repository import MockRepository
 
 
@@ -1394,5 +1397,25 @@ def test_installer_required_extras_should_be_installed(
     installer.run()
 
     assert len(installer.installer.installs) == 2
+    assert len(installer.installer.updates) == 0
+    assert len(installer.installer.removals) == 0
+
+
+def test_installer_can_install_dependencies_from_forced_source(
+    locker, package, installed, env
+):
+    package.python_versions = "^3.7"
+    package.add_dependency("tomlkit", {"version": "^0.5", "source": "legacy"})
+
+    pool = Pool()
+    pool.add_repository(MockLegacyRepository())
+    pool.add_repository(MockRepository())
+
+    installer = Installer(NullIO(), env, package, locker, pool, installed=installed)
+
+    installer.update(True)
+    installer.run()
+
+    assert len(installer.installer.installs) == 1
     assert len(installer.installer.updates) == 0
     assert len(installer.installer.removals) == 0
