@@ -81,13 +81,16 @@ def get_abi_tag(env):
             d = "d"
         if get_flag(env, "WITH_PYMALLOC", lambda: impl == "cp", warn=(impl == "cp")):
             m = "m"
-        if get_flag(
-            env,
-            "Py_UNICODE_SIZE",
-            lambda: sys.maxunicode == 0x10FFFF,
-            expected=4,
-            warn=(impl == "cp" and env.version_info < (3, 3)),
-        ) and env.version_info < (3, 3):
+        if (
+            get_flag(
+                env,
+                "Py_UNICODE_SIZE",
+                lambda: sys.maxunicode == 0x10FFFF,
+                expected=4,
+                warn=(impl == "cp" and env.version_info < (3, 3)),
+            )
+            and env.version_info < (3, 3)
+        ):
             u = "u"
         abi = "%s%s%s%s%s" % (impl, get_impl_ver(env), d, m, u)
     elif soabi and soabi.startswith("cpython-"):
